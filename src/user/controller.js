@@ -276,6 +276,65 @@ const deleteProducts = (req, res) => {
   });
 };
 
+
+const getOrders = (req, res) => {
+  const token = req.header("auth-token");
+  const data = jwt.verify(token, JWT_SECRET);
+  const role = data.roles;
+  console.log("role in getproduct " + role);
+
+  pool.query(queries.getOrders, (error, result) => {
+    if (error) throw error;
+    res.status(200).send(result.rows);
+  });
+};
+
+const getOrdersById = (req, res) => {
+  const token = req.header("auth-token");
+  const data = jwt.verify(token, JWT_SECRET);
+  const role = data.roles;
+  console.log("role in getproduct " + role);
+  const id = req.params.id;
+  pool.query(queries.getOrdersById, [id], (error, result) => {
+    if (error) throw error;
+    if (!result.rows.length) {
+      res.send("product does not exist");
+    } else {
+      res.status(200).send(result.rows);
+    }
+  });
+};
+
+const updateOrdersById = (req, res) => {
+  const id = req.params.id;
+  const { status } = req.body;
+  const token = req.header("auth-token");
+  const data = jwt.verify(token, JWT_SECRET);
+  const role = data.roles;
+  console.log("role in getproduct " + role);
+
+  pool.query(queries.getOrdersById, [id], (error, result) => {
+    if (error) throw error;
+    if (!result.rows.length) {
+      res.send("product does not exist");
+    } else {
+      if (role == "admin") {
+        pool.query(
+          queries.updateOrdersById,
+          [status,id],
+          (error, result) => {
+            if (error) throw error;
+
+            res.status(200).send("Updated order successfully");
+          }
+        );
+      } else {
+        res.send("Only Admin or Vendors can update products");
+      }
+    }
+  });
+};
+
 module.exports = {
   getUsers,
   getUsersById,
@@ -290,6 +349,9 @@ module.exports = {
   pdtToActiveAndInactive,
   updateProducts,
   deleteProducts,
+  getOrders,
+  getOrdersById,
+  updateOrdersById
 };
 
 // const {

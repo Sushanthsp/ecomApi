@@ -20,7 +20,8 @@ router.put('/products/activeInactive/:id',fetchuser,controller.pdtToActiveAndIna
 router.put('/products/update/:id',fetchuser,controller.updateProducts)
 router.delete('/products/delete/:id',fetchuser,controller.deleteProducts)
 
-
-
+router.get('/orders',fetchuser,controller.getOrders)
+router.get('/orders/:id',fetchuser,controller.getOrdersById)
+router.put('/orders/:id',fetchuser,controller.updateOrdersById)
 
 module.exports = router;

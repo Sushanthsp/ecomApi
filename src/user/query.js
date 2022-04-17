@@ -15,6 +15,10 @@ const changeStatusByAdminAndVendor ="UPDATE products SET status ='readyForListin
 const updateProductByAdminAndVendor="UPDATE products SET status=$1, title=$2, pictureurl=$3, price=$4 WHERE id=$5"
 const deleteProductsByAdmin = "DELETE FROM products WHERE id = $1"
 
+const getOrders = "SELECT * FROM orders";
+const getOrdersById = "SELECT * FROM orders WHERE id=$1"
+const updateOrdersById = "UPDATE orders SET status=$1 WHERE id=$2"
+
 module.exports = {
     getUsers,
     getUserById,
@@ -31,5 +35,9 @@ module.exports = {
     changeStatusByAdmin,
     changeStatusByAdminAndVendor,
     updateProductByAdminAndVendor,
-    deleteProductsByAdmin
+    deleteProductsByAdmin,
+    getOrders,
+    getOrdersById,
+    updateOrdersById
 };
+
