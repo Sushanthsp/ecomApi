@@ -2,8 +2,8 @@ const pool = require("../../db");
 const queries = require("./query");
 const bcrypt = require("bcryptjs");
 var jwt = require("jsonwebtoken");
+require('dotenv').config()
 
-const JWT_SECRET = "123456$oy";
 
 const getUsers = (req, res) => {
   pool.query(queries.getUsers, (error, result) => {
@@ -36,8 +36,8 @@ const addUser = async (req, res) => {
       [name, email, secPass, roles],
       (error, results) => {
         const authtoken = jwt.sign(
-          { id, name, email, password, roles },
-          JWT_SECRET
+          {  email, password },
+          process.env.JWT_SECRET
         );
         if (error) throw error;
         res.status(201).json(authtoken);
@@ -53,14 +53,13 @@ const login = async (req, res) => {
     if (!results.rows.length) {
       return res.send("no user found");
     }
-
     const passwordCompare = bcrypt.compare(password, results.rows[0].password);
     if (!passwordCompare) {
       return res.status(400).json({
         error: "Please try to login with correct credentials",
       });
     } else {
-      const authtoken = jwt.sign(results.rows[0].password, JWT_SECRET);
+      const authtoken = jwt.sign({email,password}, process.env.JWT_SECRET);
       if (error) throw error;
       res.status(201).json(authtoken);
     }
@@ -112,7 +111,7 @@ const updateUserById = (req, res) => {
 
 const getProducts = (req, res) => {
   const token = req.header("auth-token");
-  const data = jwt.verify(token, JWT_SECRET);
+  const data = jwt.verify(token, process.env.JWT_SECRET);
   const role = data.roles;
   console.log("role in getproduct " + role);
 
@@ -124,7 +123,7 @@ const getProducts = (req, res) => {
 
 const getProductsById = (req, res) => {
   const token = req.header("auth-token");
-  const data = jwt.verify(token, JWT_SECRET);
+  const data = jwt.verify(token, process.env.JWT_SECRET);
   const role = data.roles;
   console.log("role in getproduct " + role);
   const id = req.params.id;
@@ -142,7 +141,7 @@ const createProducts = (req, res) => {
   const { status, title, pictureUrl, price, createdby } = req.body;
 
   const token = req.header("auth-token");
-  const data = jwt.verify(token, JWT_SECRET);
+  const data = jwt.verify(token, process.env.JWT_SECRET);
   const role = data.roles;
   console.log("role in getproduct " + role);
 
@@ -163,7 +162,7 @@ const createProducts = (req, res) => {
 const pdtToReadyForListing = (req, res) => {
   const id = req.params.id;
   const token = req.header("auth-token");
-  const data = jwt.verify(token, JWT_SECRET);
+  const data = jwt.verify(token, process.env.JWT_SECRET);
   const role = data.roles;
   console.log("role in getproduct " + role);
 
@@ -193,7 +192,7 @@ const pdtToActiveAndInactive = (req, res) => {
   const id = req.params.id;
   const { status } = req.body;
   const token = req.header("auth-token");
-  const data = jwt.verify(token, JWT_SECRET);
+  const data = jwt.verify(token, process.env.JWT_SECRET);
   const role = data.roles;
   console.log("role in getproduct " + role);
 
@@ -225,7 +224,7 @@ const updateProducts = (req, res) => {
   const id = req.params.id;
   const { status, title, pictureUrl, price } = req.body;
   const token = req.header("auth-token");
-  const data = jwt.verify(token, JWT_SECRET);
+  const data = jwt.verify(token, process.env.JWT_SECRET);
   const role = data.roles;
   console.log("role in getproduct " + role);
 
@@ -254,7 +253,7 @@ const updateProducts = (req, res) => {
 const deleteProducts = (req, res) => {
   const id = req.params.id;
   const token = req.header("auth-token");
-  const data = jwt.verify(token, JWT_SECRET);
+  const data = jwt.verify(token, process.env.JWT_SECRET);
   const role = data.roles;
   console.log("role in getproduct " + role);
 
@@ -279,7 +278,7 @@ const deleteProducts = (req, res) => {
 
 const getOrders = (req, res) => {
   const token = req.header("auth-token");
-  const data = jwt.verify(token, JWT_SECRET);
+  const data = jwt.verify(token, process.env.JWT_SECRET);
   const role = data.roles;
   console.log("role in getproduct " + role);
 
@@ -291,7 +290,7 @@ const getOrders = (req, res) => {
 
 const getOrdersById = (req, res) => {
   const token = req.header("auth-token");
-  const data = jwt.verify(token, JWT_SECRET);
+  const data = jwt.verify(token, process.env.JWT_SECRET);
   const role = data.roles;
   console.log("role in getproduct " + role);
   const id = req.params.id;
@@ -309,7 +308,7 @@ const updateOrdersById = (req, res) => {
   const id = req.params.id;
   const { status } = req.body;
   const token = req.header("auth-token");
-  const data = jwt.verify(token, JWT_SECRET);
+  const data = jwt.verify(token, process.env.JWT_SECRET);
   const role = data.roles;
   console.log("role in getproduct " + role);
 
