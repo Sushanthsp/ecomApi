@@ -1,9 +1,10 @@
-const pool = require("./../db")
+const pool = require("./../db");
 const queries = require("./query");
 const bcrypt = require("bcryptjs");
 var jwt = require("jsonwebtoken");
-require('dotenv').config()
+require("dotenv").config();
 
+//fetch all users from table
 const getUsers = (req, res) => {
   pool.query(queries.getUsers, (error, result) => {
     if (error) throw error;
@@ -12,6 +13,7 @@ const getUsers = (req, res) => {
   });
 };
 
+//fetch users from table by their id
 const getUsersById = (req, res) => {
   const id = parseInt(req.params.id);
   pool.query(queries.getUserById, [id], (error, result) => {
@@ -20,6 +22,7 @@ const getUsersById = (req, res) => {
   });
 };
 
+//adds users into table
 const addUser = async (req, res) => {
   const { id, name, email, password, roles } = req.body;
   const salt = await bcrypt.genSalt(10);
@@ -35,7 +38,7 @@ const addUser = async (req, res) => {
       [name, email, secPass, roles],
       (error, results) => {
         const authtoken = jwt.sign(
-          {  email, password },
+          { name, email, password, roles },
           process.env.JWT_SECRET
         );
         if (error) throw error;
@@ -45,9 +48,9 @@ const addUser = async (req, res) => {
   });
 };
 
+//login to the existing user table
 const login = async (req, res) => {
   const { email, password } = req.body;
-
   pool.query(queries.getUserByEmail, [email], (error, results) => {
     if (!results.rows.length) {
       return res.send("no user found");
@@ -58,13 +61,14 @@ const login = async (req, res) => {
         error: "Please try to login with correct credentials",
       });
     } else {
-      const authtoken = jwt.sign({email,password}, process.env.JWT_SECRET);
+      const authtoken = jwt.sign({ email, password }, process.env.JWT_SECRET);
       if (error) throw error;
       res.status(201).json(authtoken);
     }
   });
 };
 
+//remove user by their id
 const removeUserByName = (req, res) => {
   const id = parseInt(req.params.id);
   pool.query(queries.getUserById, [id], (error, result) => {
@@ -87,6 +91,7 @@ const removeUserByName = (req, res) => {
   });
 };
 
+//update users by their id
 const updateUserById = (req, res) => {
   const id = parseInt(req.params.id);
   const { name, email, password, roles } = req.body;
@@ -108,6 +113,7 @@ const updateUserById = (req, res) => {
   });
 };
 
+//get all products
 const getProducts = (req, res) => {
   const token = req.header("auth-token");
   const data = jwt.verify(token, process.env.JWT_SECRET);
@@ -120,6 +126,7 @@ const getProducts = (req, res) => {
   });
 };
 
+//get all products by their id
 const getProductsById = (req, res) => {
   const token = req.header("auth-token");
   const data = jwt.verify(token, process.env.JWT_SECRET);
@@ -135,6 +142,8 @@ const getProductsById = (req, res) => {
     }
   });
 };
+
+//create new products into db
 
 const createProducts = (req, res) => {
   const { status, title, pictureUrl, price, createdby } = req.body;
@@ -158,6 +167,7 @@ const createProducts = (req, res) => {
   }
 };
 
+//update product status to ready for listing
 const pdtToReadyForListing = (req, res) => {
   const id = req.params.id;
   const token = req.header("auth-token");
@@ -187,6 +197,7 @@ const pdtToReadyForListing = (req, res) => {
   });
 };
 
+//update product status to active or inactive
 const pdtToActiveAndInactive = (req, res) => {
   const id = req.params.id;
   const { status } = req.body;
@@ -219,6 +230,7 @@ const pdtToActiveAndInactive = (req, res) => {
   });
 };
 
+//update product
 const updateProducts = (req, res) => {
   const id = req.params.id;
   const { status, title, pictureUrl, price } = req.body;
@@ -249,6 +261,7 @@ const updateProducts = (req, res) => {
   });
 };
 
+//delete products by their id
 const deleteProducts = (req, res) => {
   const id = req.params.id;
   const token = req.header("auth-token");
@@ -274,7 +287,7 @@ const deleteProducts = (req, res) => {
   });
 };
 
-
+//get all orders from table
 const getOrders = (req, res) => {
   const token = req.header("auth-token");
   const data = jwt.verify(token, process.env.JWT_SECRET);
@@ -287,6 +300,7 @@ const getOrders = (req, res) => {
   });
 };
 
+//get order by id
 const getOrdersById = (req, res) => {
   const token = req.header("auth-token");
   const data = jwt.verify(token, process.env.JWT_SECRET);
@@ -303,6 +317,7 @@ const getOrdersById = (req, res) => {
   });
 };
 
+//update orders by their id
 const updateOrdersById = (req, res) => {
   const id = req.params.id;
   const { status } = req.body;
@@ -317,18 +332,80 @@ const updateOrdersById = (req, res) => {
       res.send("product does not exist");
     } else {
       if (role == "admin") {
-        pool.query(
-          queries.updateOrdersById,
-          [status,id],
-          (error, result) => {
-            if (error) throw error;
+        pool.query(queries.updateOrdersById, [status, id], (error, result) => {
+          if (error) throw error;
 
-            res.status(200).send("Updated order successfully");
-          }
-        );
+          res.status(200).send("Updated order successfully");
+        });
       } else {
         res.send("Only Admin or Vendors can update products");
       }
+    }
+  });
+};
+
+// const createorder = (req, res) => {
+//   const id = req.params.id;
+//   const token = req.header("auth-token");
+//   const data = jwt.verify(token, process.env.JWT_SECRET);
+//   const role = data.roles;
+//   console.log("role in getproduct " + role);
+
+//   pool.query(queries.getProductsById, [id], (error, result) => {
+//     if (error) throw error;
+//     if (!result.rows.length) {
+//       res.send("product does not exist");
+//     } else {
+//       pool.query(
+//         queries.createOrder,
+//         [result.rows[0].title, result.rows[0].price, result.rows[0].createdby],
+//         (error, results) => {
+//           if (error) throw error;
+//           res.status(200).send(result.rows);
+//         }
+//       );
+//     }
+//   });
+// };
+
+//create buy order and count total price
+const createorder = (req, res) => {
+  const id = req.params.id;
+  const token = req.header("auth-token");
+  const data = jwt.verify(token, process.env.JWT_SECRET);
+  console.log(data.email);
+  let identity = 24;
+  let totalprice = 0;
+
+  pool.query(queries.getId, [data.email], (error, result) => {
+    console.log(result.rows[0].id);
+    identity = result.rows[0].id;
+    pool.query(queries.countTotalPrice, [identity], (error, results) => {
+      console.log("total price");
+      console.log(results.rows[0].sum);
+      totalprice = results.rows[0].sum;
+    });
+  });
+
+  pool.query(queries.getProductsById, [id], (error, result) => {
+    if (error) throw error;
+    //   console.log(result.rows)
+    if (!result.rows.length) {
+      res.send("product does not exist");
+    } else {
+      pool.query(
+        queries.createOrder,
+        [
+          result.rows[0].title,
+          result.rows[0].price,
+          result.rows[0].createdby,
+          identity,
+        ],
+        (error, results) => {
+          if (error) throw error;
+          res.status(200).send({ totalprice });
+        }
+      );
     }
   });
 };
@@ -349,134 +426,6 @@ module.exports = {
   deleteProducts,
   getOrders,
   getOrdersById,
-  updateOrdersById
+  updateOrdersById,
+  createorder,
 };
-
-// const {
-//   create,
-//   getUserByUserEmail,
-//   getUserByUserId,
-//   getUsers,
-//   updateUser,
-//   deleteUser
-// } = require("./query");
-// const { hashSync, genSaltSync, compareSync } = require("bcrypt");
-// const { sign } = require("jsonwebtoken");
-
-// module.exports = {
-//   createUser: (req, res) => {
-//     const body = req.body;
-//     const salt = genSaltSync(10);
-//     body.password = hashSync(body.password, salt);
-//     create(body, (err, results) => {
-//       if (err) {
-//         console.log(err);
-//         return res.status(500).json({
-//           success: 0,
-//           message: "Database connection errror"
-//         });
-//       }
-//       return res.status(200).json({
-//         success: 1,
-//         data: results
-//       });
-//     });
-//   },
-//   login: (req, res) => {
-//     const body = req.body;
-//     getUserByUserEmail(body.email, (err, results) => {
-//       if (err) {
-//         console.log(err);
-//       }
-//       if (!results) {
-//         return res.json({
-//           success: 0,
-//           data: "Invalid email or password"
-//         });
-//       }
-//       const result = compareSync(body.password, results.password);
-//       if (result) {
-//         results.password = undefined;
-//         const jsontoken = sign({ result: results }, "qwe1234", {
-//           expiresIn: "1h"
-//         });
-//         return res.json({
-//           success: 1,
-//           message: "login successfully",
-//           token: jsontoken
-//         });
-//       } else {
-//         return res.json({
-//           success: 0,
-//           data: "Invalid email or password"
-//         });
-//       }
-//     });
-//   },
-//   getUserByUserId: (req, res) => {
-//     const id = req.params.id;
-//     getUserByUserId(id, (err, results) => {
-//       if (err) {
-//         console.log(err);
-//         return;
-//       }
-//       if (!results) {
-//         return res.json({
-//           success: 0,
-//           message: "Record not Found"
-//         });
-//       }
-//       results.password = undefined;
-//       return res.json({
-//         success: 1,
-//         data: results
-//       });
-//     });
-//   },
-//   getUsers: (req, res) => {
-//     getUsers((err, results) => {
-//       if (err) {
-//         console.log(err);
-//         return;
-//       }
-//       return res.json({
-//         success: 1,
-//         data: results
-//       });
-//     });
-//   },
-//   updateUsers: (req, res) => {
-//     const body = req.body;
-//     const salt = genSaltSync(10);
-//     body.password = hashSync(body.password, salt);
-//     updateUser(body, (err, results) => {
-//       if (err) {
-//         console.log(err);
-//         return;
-//       }
-//       return res.json({
-//         success: 1,
-//         message: "updated successfully"
-//       });
-//     });
-//   },
-//   deleteUser: (req, res) => {
-//     const data = req.body;
-//     deleteUser(data, (err, results) => {
-//       if (err) {
-//         console.log(err);
-//         return;
-//       }
-//       if (!results) {
-//         return res.json({
-//           success: 0,
-//           message: "Record Not Found"
-//         });
-//       }
-//       return res.json({
-//         success: 1,
-//         message: "user deleted successfully"
-//       });
-//     });
-//   }
-// };
