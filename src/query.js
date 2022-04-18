@@ -24,9 +24,10 @@ const getOrders = "SELECT * FROM buyorder";
 const getOrdersById = "SELECT * FROM buyorder WHERE id=$1";
 const updateOrdersById = "UPDATE buyorder SET status=$1 WHERE id=$2";
 const createOrder =
-  "INSERT INTO buyorder(items,totalprice,createdby,refid) VALUES($1,$2,$3,$4)";
+  "INSERT INTO buyorder(items,totalprice,createdby,refid) VALUES($1,$2,$3,$4) ";
 const getId = "SELECT id from users where email = $1";
 const countTotalPrice = "SELECT SUM(totalprice) FROM buyorder WHERE refid=$1";
+const totalItems = "SELECT ITEMS FROM buyorder WHERE refid = $1"
 
 module.exports = {
   getUsers,
@@ -51,4 +52,7 @@ module.exports = {
   createOrder,
   getId,
   countTotalPrice,
+  totalItems
 };
+
+

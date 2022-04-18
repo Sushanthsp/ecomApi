@@ -371,43 +371,61 @@ const updateOrdersById = (req, res) => {
 //create buy order and count total price
 const createorder = (req, res) => {
   const id = req.params.id;
+  const { bodyId } = req.body;
   const token = req.header("auth-token");
   const data = jwt.verify(token, process.env.JWT_SECRET);
   console.log(data.email);
-  let identity = 24;
-  let totalprice = 0;
+  let identity = 0;
+  var totalprice = 0;
+  let totalItems = 0;
 
-  pool.query(queries.getId, [data.email], (error, result) => {
-    console.log(result.rows[0].id);
-    identity = result.rows[0].id;
-    pool.query(queries.countTotalPrice, [identity], (error, results) => {
-      console.log("total price");
-      console.log(results.rows[0].sum);
-      totalprice = results.rows[0].sum;
-    });
+  //   pool.query(queries.getId, [data.email], (error, result) => {
+  //     console.log(result.rows[0].id);
+  //     identity = result.rows[0].id;})
+  pool.query(queries.totalItems, [id], (error, results) => {
+    return (totalItems = results.rows);
   });
-
-  pool.query(queries.getProductsById, [id], (error, result) => {
-    if (error) throw error;
-    //   console.log(result.rows)
-    if (!result.rows.length) {
-      res.send("product does not exist");
-    } else {
-      pool.query(
-        queries.createOrder,
-        [
-          result.rows[0].title,
-          result.rows[0].price,
-          result.rows[0].createdby,
-          identity,
-        ],
-        (error, results) => {
-          if (error) throw error;
-          res.status(200).send({ totalprice });
+  pool.query(queries.countTotalPrice, [id], (error, results) => {
+    return (totalprice = results.rows[0]);
+  });
+  
+  for (let i = 0; i < bodyId.length; i++) {
+    pool.query(
+      queries.getProductsById,
+      [parseInt(bodyId[i])],
+      (error, result) => {
+        if (error) throw error;
+        if (!result.rows.length) {
+          res.send(`${bodyId[i]}th product does not exist`);
+        } else {
+        //   console.log("result.rows");
+        //   console.log(result.rows[0]);
+        //   console.log("bodyId[i]");
+        //   console.log(bodyId[i]);
+          pool.query(
+            queries.createOrder,
+            [
+              result.rows[0].title,
+              result.rows[0].price,
+              result.rows[0].createdby,
+              id,
+            ],
+            (error, results) => {
+              if (error) throw error;
+              console.log("totalItems");
+              console.log(totalItems);
+              console.log("totalprice");
+              console.log(totalprice);
+            }
+          );
         }
-      );
-    }
-  });
+      }
+    );
+  }
+
+  
+
+  res.send("created buy order successfully");
 };
 
 module.exports = {
