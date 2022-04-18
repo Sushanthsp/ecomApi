@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const controller = require('./controller')
-var fetchuser = require("../../middleWare/fetchUser");
+var fetchuser = require("./../middleWare/fetchUser");
 
 const router = Router();
 

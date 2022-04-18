@@ -1,9 +1,8 @@
-const pool = require("../../db");
+const pool = require("./../db")
 const queries = require("./query");
 const bcrypt = require("bcryptjs");
 var jwt = require("jsonwebtoken");
 require('dotenv').config()
-
 
 const getUsers = (req, res) => {
   pool.query(queries.getUsers, (error, result) => {
