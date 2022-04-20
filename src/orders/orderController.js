@@ -88,22 +88,21 @@ const createorder = async (req, res) => {
   const id = req.params.id;
   const { bodyId } = req.body;
   const token = req.header("auth-token");
+
+try {
   const data = jwt.verify(token, process.env.JWT_SECRET);
-  console.log("data.role " +data.roles );
+  console.log("data.role " + data.roles);
   //   let identity = 0;
   //   var totalprice = 0;
   //   let totalItems = 0;
-
-//   const identity = await queries.getId(data.email);
-//   console.log(identity.rows[0]);
-
-  
+  //   const identity = await queries.getId(data.email);
+  //   console.log(identity.rows[0]);
 
   for (let i = 0; i < bodyId.length; i++) {
     const getId = await queries.getProductsById(bodyId[i]);
-    console.log(getId.rows)
-    if (getId.rows.length===0) {
-      res.send(`${bodyId[i]}th product does not exist`);
+    console.log(getId.rows);
+    if (getId.rows.length === 0) {
+      return res.send(`${bodyId[i]}th product does not exist`);
     } else {
       const createorder = await queries.createOrder(
         getId.rows[0].title,
@@ -115,13 +114,17 @@ const createorder = async (req, res) => {
   }
   const totalItems = await queries.totalItems(id);
   const countTotalPrice = await queries.countTotalPrice(id);
-//   const arr = totalItems.concat(countTotalPrice)
-//   console.log(totalItems.rows)
-//   console.log(countTotalPrice.rows)
-// const array3 = [...totalItems,...countTotalPrice]
-const combine =  queries.combineArray(totalItems.rows,countTotalPrice.rows)
-console.log(combine)
-  res.send( ["created buy order successfully",...combine]);
+  //   const arr = totalItems.concat(countTotalPrice)
+  //   console.log(totalItems.rows)
+  //   console.log(countTotalPrice.rows)
+  // const array3 = [...totalItems,...countTotalPrice]
+  const combine = queries.combineArray(totalItems.rows, countTotalPrice.rows);
+  console.log(combine);
+  res.send(["created buy order successfully", ...combine]);
+} catch (error) {
+  throw error
+}
+  
 };
 
 module.exports = {
