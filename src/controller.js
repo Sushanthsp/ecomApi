@@ -378,7 +378,7 @@ const createorder = (req, res) => {
   let identity = 0;
   var totalprice = 0;
   let totalItems = 0;
-
+  
   //   pool.query(queries.getId, [data.email], (error, result) => {
   //     console.log(result.rows[0].id);
   //     identity = result.rows[0].id;})
