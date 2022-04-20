@@ -11,11 +11,15 @@ const getProducts = async (req, res) => {
   const role = data.roles;
   console.log("role in getproduct " + role);
 
-  const getPdt = await queries.getProducts();
-  if (!getPdt) {
-    res.send("Product does not exist");
-  } else {
-    res.status(200).send(getPdt.rows);
+  try {
+    const getPdt = await queries.getProducts();
+    if (!getPdt) {
+      res.send("Product does not exist");
+    } else {
+      res.status(200).send(getPdt.rows);
+    }
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -26,12 +30,16 @@ const getProductsById = async (req, res) => {
   const role = data.roles;
   console.log("role in getproduct " + role);
   const id = req.params.id;
-  const getPdtById = await queries.getProductsById(id);
+  try {
+    const getPdtById = await queries.getProductsById(id);
 
-  if (!getPdtById.rows.length) {
-    res.send("product does not exist");
-  } else {
-    res.status(200).send(getPdtById.rows);
+    if (!getPdtById.rows.length) {
+      res.send("product does not exist");
+    } else {
+      res.status(200).send(getPdtById.rows);
+    }
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -41,22 +49,26 @@ const createProducts = async (req, res) => {
   const { status, title, pictureUrl, price } = req.body;
 
   const token = req.header("auth-token");
-  const data = jwt.verify(token, process.env.JWT_SECRET);
-  const role = data.roles;
-  console.log("role in getproduct " + role);
+  try {
+    const data = jwt.verify(token, process.env.JWT_SECRET);
+    const role = data.roles;
+    console.log("role in getproduct " + role);
 
-  if (role == "admin" || role == "vendor") {
-    const createPdt = await queries.createProduct(
-      status,
-      title,
-      pictureUrl,
-      price,
-      role
-    );
+    if (role == "admin" || role == "vendor") {
+      const createPdt = await queries.createProduct(
+        status,
+        title,
+        pictureUrl,
+        price,
+        role
+      );
 
-    res.status(200).send("Added products successfully");
-  } else {
-    res.send("Only Admin or Vendors can add products");
+      res.status(200).send("Added products successfully");
+    } else {
+      res.send("Only Admin or Vendors can add products");
+    }
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -68,17 +80,21 @@ const pdtToReadyForListing = async (req, res) => {
   const role = data.roles;
   console.log("role in getproduct " + role);
 
-  const pdtToReadyForListing = await queries.getProductsById(id);
-  if (!pdtToReadyForListing.rows.length) {
-    res.send("product does not exist");
-  } else {
-    if (role == "admin" || role == "vendor") {
-      const changeStatusByAdminAndVendor =
-        await queries.changeStatusByAdminAndVendor(id);
-      res.status(200).send("Product is ready for listing");
+  try {
+    const pdtToReadyForListing = await queries.getProductsById(id);
+    if (!pdtToReadyForListing.rows.length) {
+      res.send("product does not exist");
     } else {
-      res.send("Only Admin or Vendors can change status");
+      if (role == "admin" || role == "vendor") {
+        const changeStatusByAdminAndVendor =
+          await queries.changeStatusByAdminAndVendor(id);
+        res.status(200).send("Product is ready for listing");
+      } else {
+        res.send("Only Admin or Vendors can change status");
+      }
     }
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -87,23 +103,29 @@ const pdtToActiveAndInactive = async (req, res) => {
   const id = req.params.id;
   const { status } = req.body;
   const token = req.header("auth-token");
-  const data = jwt.verify(token, process.env.JWT_SECRET);
-  const role = data.roles;
-  console.log("role in getproduct " + role);
+  try {
+    const data = jwt.verify(token, process.env.JWT_SECRET);
+    const role = data.roles;
+    console.log("role in getproduct " + role);
 
-  const pdtToActiveAndInactive = await queries.getProductsById(id);
-  if (!pdtToActiveAndInactive.rows.length) {
-    res.send("product does not exist");
-  } else {
-    if (role == "admin") {
-      const changeStatusByAdminAndVendor = await queries.changeStatusByAdmin(
-        status,
-        id
-      );
-      res.status(200).send(`Successfully changed product status to ${status}`);
+    const pdtToActiveAndInactive = await queries.getProductsById(id);
+    if (!pdtToActiveAndInactive.rows.length) {
+      res.send("product does not exist");
     } else {
-      res.send("Only Admin can change status");
+      if (role == "admin") {
+        const changeStatusByAdminAndVendor = await queries.changeStatusByAdmin(
+          status,
+          id
+        );
+        res
+          .status(200)
+          .send(`Successfully changed product status to ${status}`);
+      } else {
+        res.send("Only Admin can change status");
+      }
     }
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -116,23 +138,27 @@ const updateProducts = async (req, res) => {
   const role = data.roles;
   console.log("role in getproduct " + role);
 
-  const getPdtById = await queries.getProductsById(id);
-  if (!getPdtById.rows.length) {
-    res.send("product does not exist");
-  } else {
-    if (role == "admin" || role == "vendor") {
-      const updateProductByAdminAndVendor =
-        await queries.updateProductByAdminAndVendor(
-          status,
-          title,
-          pictureurl,
-          price,
-          id
-        );
-      res.status(200).send(`Updated product successfully`);
+  try {
+    const getPdtById = await queries.getProductsById(id);
+    if (!getPdtById.rows.length) {
+      res.send("product does not exist");
     } else {
-      res.send("Only Admin or Vendors can update products");
+      if (role == "admin" || role == "vendor") {
+        const updateProductByAdminAndVendor =
+          await queries.updateProductByAdminAndVendor(
+            status,
+            title,
+            pictureurl,
+            price,
+            id
+          );
+        res.status(200).send(`Updated product successfully`);
+      } else {
+        res.send("Only Admin or Vendors can update products");
+      }
     }
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -144,17 +170,21 @@ const deleteProducts = async (req, res) => {
   const role = data.roles;
   console.log("role in getproduct " + role);
 
-  const getpdtById = await queries.getProductsById(id);
+  try {
+    const getpdtById = await queries.getProductsById(id);
 
-  if (!getpdtById.rows.length) {
-    res.send("product does not exist");
-  } else {
-    if (role == "admin") {
-      await queries.deleteProductsByAdmin(id);
-      res.status(200).send("Successfully deleted product");
+    if (!getpdtById.rows.length) {
+      res.send("product does not exist");
     } else {
-      res.send("Only Admin can delete products");
+      if (role == "admin") {
+        await queries.deleteProductsByAdmin(id);
+        res.status(200).send("Successfully deleted product");
+      } else {
+        res.send("Only Admin can delete products");
+      }
     }
+  } catch (error) {
+    throw error;
   }
 };
 
